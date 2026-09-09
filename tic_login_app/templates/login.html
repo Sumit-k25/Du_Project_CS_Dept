@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}TIC Login - DU Computer Science{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-box">
+        <div class="login-header">
+            <h1>TIC Login</h1>
+            <p>Delhi University - Computer Science Department</p>
+        </div>
+        
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="tic_email">TIC Email:</label>
+                <input 
+                    type="email" 
+                    id="tic_email" 
+                    name="tic_email" 
+                    placeholder="Enter your TIC email" 
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Enter your password" 
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-login">Login</button>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const tic_email = document.getElementById('tic_email').value;
+        const password = document.getElementById('password').value;
+        const errorMessage = document.getElementById('errorMessage');
+        const spinner = document.getElementById('loadingSpinner');
+
+        errorMessage.style.display = 'none';
+        spinner.style.display = 'block';
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    tic_email: tic_email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = '/dashboard';
+            } else {
+                errorMessage.textContent = data.message || 'Login failed';
+                errorMessage.style.display = 'block';
+                spinner.style.display = 'none';
+            }
+        } catch (error) {
+            errorMessage.textContent = 'An error occurred. Please try again.';
+            errorMessage.style.display = 'block';
+            spinner.style.display = 'none';
+            console.error('Error:', error);
+        }
+    });
+</script>
+{% endblock %}

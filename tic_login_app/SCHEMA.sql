@@ -1,0 +1,71 @@
+-- Database Schema for TIC Login Application
+-- This schema should be run in Supabase SQL Editor
+
+-- College Details Table
+CREATE TABLE public.College_Details (
+  College_Code bigint NOT NULL,
+  College_Name character varying NOT NULL UNIQUE,
+  Tic_Email character varying NOT NULL UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT College_Details_pkey PRIMARY KEY (College_Code)
+);
+
+-- Users Table
+CREATE TABLE public.Users (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  tic_mail character varying NOT NULL UNIQUE,
+  password character varying NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT Users_pkey PRIMARY KEY (id),
+  CONSTRAINT Users_tic_mail_fkey FOREIGN KEY (tic_mail) REFERENCES public.College_Details(Tic_Email)
+);
+
+-- Course Program Details Table
+CREATE TABLE public.Collage_Course_Program_Details (
+  Program_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  Course_Program_name character varying NOT NULL,
+  College_id bigint,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT Collage_Course_Program_Details_pkey PRIMARY KEY (Program_id),
+  CONSTRAINT Collage_Course_Program_Details_College_id_fkey FOREIGN KEY (College_id) REFERENCES public.College_Details(College_Code)
+);
+
+-- Paper Details Table
+CREATE TABLE public.Paper_Details (
+  UPC_Code bigint NOT NULL,
+  Paper_Name character varying NOT NULL,
+  Semester smallint NOT NULL,
+  Paper_type character varying NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT Paper_Details_pkey PRIMARY KEY (UPC_Code)
+);
+
+-- Course Teaching Details Table (Main Table)
+CREATE TABLE public.Collage_Course_Teaching_Details (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  College_id bigint NOT NULL,
+  Course_id bigint NOT NULL,
+  Semester smallint NOT NULL,
+  Paper_type character varying NOT NULL,
+  paper_name character varying NOT NULL,
+  UPC_code character varying NOT NULL,
+  Teacher_Name character varying NOT NULL,
+  Theory_Practical character varying NOT NULL,
+  Teacher_Status character varying NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT Collage_Course_Teaching_Details_pkey PRIMARY KEY (id),
+  CONSTRAINT Collage_Course_Teaching_Details_College_id_fkey FOREIGN KEY (College_id) REFERENCES public.College_Details(College_Code)
+);
+
+-- Create indexes for better query performance
+CREATE INDEX idx_users_tic_mail ON public.Users(tic_mail);
+CREATE INDEX idx_college_details_tic_email ON public.College_Details(Tic_Email);
+CREATE INDEX idx_teaching_details_college_id ON public.Collage_Course_Teaching_Details(College_id);
+CREATE INDEX idx_teaching_details_semester ON public.Collage_Course_Teaching_Details(Semester);
+CREATE INDEX idx_paper_details_semester ON public.Paper_Details(Semester);
+
+-- Enable Row Level Security (optional - for production)
+-- ALTER TABLE public.Users ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE public.Collage_Course_Teaching_Details ENABLE ROW LEVEL SECURITY;

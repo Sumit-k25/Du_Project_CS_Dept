@@ -1,0 +1,272 @@
+# TIC Login & Course Paper Management System
+
+A Flask-based web application for managing teacher course paper details at Delhi University Computer Science Department. TICs (Teachers In-Charge) can login, add, edit, and view course paper assignments for their college.
+
+## Features
+
+✅ **TIC Authentication** - Secure login with email and password  
+✅ **Dashboard** - Personalized dashboard showing college name  
+✅ **Add Entries** - Form to add new course paper teaching details  
+✅ **Grid View** - Display all course papers in a searchable table  
+✅ **Edit/Delete** - Modify or remove course paper entries  
+✅ **Dropdown Menus** - Pre-defined selections for:
+   - Semester (1-6)
+   - Theory/Practical (Theory, Practical, Both)
+   - Teacher Status (Guest, Adhoc, Permanent)
+
+✅ **Responsive Design** - Works on desktop, tablet, and mobile
+
+## Tech Stack
+
+- **Backend**: Flask (Python)
+- **Database**: Supabase (PostgreSQL)
+- **Frontend**: HTML5, CSS3, JavaScript
+- **API**: RESTful Flask routes
+
+## Prerequisites
+
+- Python 3.8 or higher
+- pip (Python package manager)
+- Supabase account with database created
+- Modern web browser
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+cd tic_login_app
+pip install -r requirements.txt
+```
+
+### 2. Configure Supabase Credentials
+
+Update the `.env` file with your Supabase credentials:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your-anon-key
+FLASK_SECRET_KEY=your-secret-key-here
+```
+
+**How to get Supabase credentials:**
+
+1. Go to [Supabase Dashboard](https://supabase.com/)
+2. Select your project: `DU_Computer_Science_initial`
+3. Go to **Settings** → **API**
+4. Copy the **Project URL** (this is your SUPABASE_URL)
+5. Copy the **anon key** (this is your SUPABASE_KEY)
+6. Generate a secure FLASK_SECRET_KEY (any random string)
+
+### 3. Initialize Database Tables
+
+The database should already have these tables. If not, run this SQL in Supabase SQL Editor:
+
+```sql
+CREATE TABLE public.College_Details (
+  College_Code bigint NOT NULL,
+  College_Name character varying NOT NULL UNIQUE,
+  Tic_Email character varying NOT NULL UNIQUE,
+  CONSTRAINT College_Details_pkey PRIMARY KEY (College_Code)
+);
+
+CREATE TABLE public.Users (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  tic_mail character varying NOT NULL UNIQUE,
+  password character varying NOT NULL UNIQUE,
+  CONSTRAINT Users_pkey PRIMARY KEY (id),
+  CONSTRAINT Users_tic_mail_fkey FOREIGN KEY (tic_mail) REFERENCES public.College_Details(Tic_Email)
+);
+
+CREATE TABLE public.Collage_Course_Program_Details (
+  Program_id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  Course_Program_name character varying NOT NULL,
+  College_id bigint,
+  CONSTRAINT Collage_Course_Program_Details_pkey PRIMARY KEY (Program_id),
+  CONSTRAINT Collage_Course_Program_Details_College_id_fkey FOREIGN KEY (College_id) REFERENCES public.College_Details(College_Code)
+);
+
+CREATE TABLE public.Paper_Details (
+  UPC_Code bigint NOT NULL,
+  Paper_Name character varying NOT NULL,
+  Semester smallint NOT NULL,
+  Paper_type character varying NOT NULL,
+  CONSTRAINT Paper_Details_pkey PRIMARY KEY (UPC_Code)
+);
+
+CREATE TABLE public.Collage_Course_Teaching_Details (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  College_id bigint NOT NULL,
+  Course_id bigint NOT NULL,
+  Semester smallint NOT NULL,
+  Paper_type character varying NOT NULL,
+  paper_name character varying NOT NULL,
+  UPC_code character varying NOT NULL,
+  Teacher_Name character varying NOT NULL,
+  Theory_Practical character varying NOT NULL,
+  Teacher_Status character varying NOT NULL,
+  CONSTRAINT Collage_Course_Teaching_Details_pkey PRIMARY KEY (id),
+  CONSTRAINT Collage_Course_Teaching_Details_College_id_fkey FOREIGN KEY (College_id) REFERENCES public.College_Details(College_Code)
+);
+```
+
+### 4. Add Test Data (Optional)
+
+Insert sample college and user data:
+
+```sql
+-- Insert college
+INSERT INTO College_Details (College_Code, College_Name, Tic_Email)
+VALUES (1, 'Delhi University - Computer Science', 'tic@du.edu.in');
+
+-- Insert user
+INSERT INTO Users (tic_mail, password)
+VALUES ('tic@du.edu.in', 'password123');
+```
+
+**Note**: Use proper password hashing (bcrypt) in production!
+
+### 5. Run the Application
+
+```bash
+python app.py
+```
+
+The application will start on `http://localhost:5000`
+
+### 6. Login
+
+- **Email**: tic@du.edu.in
+- **Password**: password123
+
+## Project Structure
+
+```
+tic_login_app/
+├── app.py                  # Main Flask application
+├── requirements.txt        # Python dependencies
+├── .env                    # Environment variables (create this)
+├── templates/
+│   ├── base.html          # Base template
+│   ├── login.html         # Login page
+│   └── dashboard.html     # Main dashboard
+└── static/
+    ├── css/
+    │   └── style.css      # Styling
+    └── js/
+        └── script.js      # JavaScript helpers
+```
+
+## API Endpoints
+
+### Authentication
+- `GET /` - Redirect to login or dashboard
+- `GET /login` - Display login page
+- `POST /login` - Authenticate user
+- `GET /logout` - Logout user
+
+### Dashboard
+- `GET /dashboard` - Display dashboard with entries
+- `POST /api/add-entry` - Add new course paper entry
+- `GET /api/entries/<college_id>` - Get all entries for college
+- `PUT /api/update-entry/<entry_id>` - Update entry
+- `DELETE /api/delete-entry/<entry_id>` - Delete entry
+
+## Key Features Explained
+
+### 1. Login Page
+- TIC members enter their email and password
+- Validates credentials against Users table
+- Fetches associated college information
+- Stores session data for authenticated access
+
+### 2. Dashboard
+- Displays college name in navbar
+- Form to add new course paper details
+- Grid table showing all entries for that college
+- Edit and delete buttons for each entry
+
+### 3. Form Fields
+- **Teacher Name**: Full name of the teacher
+- **Paper Name**: Name of the course paper
+- **Semester**: Dropdown (1-6)
+- **Theory/Practical**: Dropdown (Theory, Practical, Both)
+- **Teacher Status**: Dropdown (Guest, Adhoc, Permanent)
+- **UPC Code**: Unique paper code
+- **Paper Type**: Type classification
+- **Course ID**: Associated course ID
+
+### 4. Grid Display
+- Sortable columns
+- Responsive table design
+- Action buttons (Edit/Delete)
+- Modal window for editing entries
+
+## Security Notes
+
+⚠️ **Important**: 
+- Replace plain text passwords with bcrypt hashing
+- Use environment variables for all secrets
+- Enable HTTPS in production
+- Add CSRF protection
+- Implement rate limiting
+- Use secure session cookies
+
+## Troubleshooting
+
+### "Connection refused"
+- Ensure Supabase URL and Key are correct in `.env`
+- Check internet connection
+- Verify Supabase project is active
+
+### "tic_mail column not found"
+- Ensure database schema is created correctly
+- Column name is lowercase: `tic_mail` (not `tic_email`)
+
+### "Module not found"
+- Run `pip install -r requirements.txt` again
+- Ensure Python 3.8+ is being used
+
+### Session expires on page refresh
+- Check Flask secret key is set in `.env`
+- Verify session storage is working
+
+## Production Deployment
+
+For production deployment:
+
+1. Set `debug=False` in Flask
+2. Use a production WSGI server (Gunicorn, uWSGI)
+3. Add proper error handling and logging
+4. Use password hashing (bcrypt)
+5. Enable HTTPS
+6. Set secure session cookies
+7. Add rate limiting and input validation
+8. Use environment-based configuration
+
+Example production run:
+```bash
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+
+## Future Enhancements
+
+- [ ] Export data to Excel/CSV
+- [ ] Email notifications
+- [ ] Advanced search and filtering
+- [ ] User role management
+- [ ] Audit logs
+- [ ] Bulk import from CSV
+- [ ] Dashboard statistics
+- [ ] Email verification on signup
+
+## Support
+
+For issues or questions, contact the development team or refer to:
+- [Flask Documentation](https://flask.palletsprojects.com/)
+- [Supabase Documentation](https://supabase.com/docs)
+
+## License
+
+This project is for educational purposes at Delhi University.

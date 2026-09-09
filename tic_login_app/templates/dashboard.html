@@ -1,0 +1,490 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TIC Management{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <h2>TIC Management System</h2>
+                <p class="college-name">{{ college_name }}</p>
+            </div>
+            <div class="navbar-menu">
+                <a href="/logout" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-content">
+        <!-- Form Section -->
+        <div class="form-section">
+            <h3>Add New Course Paper Details</h3>
+            <form id="addEntryForm" class="entry-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teacher_name">Teacher Name:</label>
+                        <input 
+                            type="text" 
+                            id="teacher_name" 
+                            name="teacher_name" 
+                            placeholder="Enter teacher name" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paper_name">Paper Name:</label>
+                        <input 
+                            type="text" 
+                            id="paper_name" 
+                            name="paper_name" 
+                            placeholder="Enter paper name" 
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="semester">Semester:</label>
+                        <select id="semester" name="semester" required>
+                            <option value="">Select Semester</option>
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="theory_practical">Theory/Practical:</label>
+                        <select id="theory_practical" name="theory_practical" required>
+                            <option value="">Select Type</option>
+                            <option value="Theory">Theory</option>
+                            <option value="Practical">Practical</option>
+                            <option value="Both">Both</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teacher_status">Teacher Status:</label>
+                        <select id="teacher_status" name="teacher_status" required>
+                            <option value="">Select Status</option>
+                            <option value="Guest">Guest</option>
+                            <option value="Adhoc">Adhoc</option>
+                            <option value="Permanent">Permanent</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="upc_code">UPC Code:</label>
+                        <input 
+                            type="text" 
+                            id="upc_code" 
+                            name="upc_code" 
+                            placeholder="Enter UPC code" 
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="paper_type">Paper Type:</label>
+                        <select id="paper_type" name="paper_type" required>
+                            <option value="">Select Paper Type</option>
+                            <option value="DSC">DSC (Data Science & Computing)</option>
+                            <option value="DSE">DSE (Discipline Specific Elective)</option>
+                            <option value="GE">GE (Generic Elective)</option>
+                            <option value="VAC">VAC (Value Added Course)</option>
+                            <option value="SEC">SEC (Skill Enhancement Course)</option>
+                            <option value="SBC">SBC (Subject Based Elective)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="course_id">Program/Course:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="course_id" name="course_id" style="flex: 1;" required>
+                                <option value="">Select from Programs</option>
+                            </select>
+                            <input 
+                                type="text" 
+                                id="course_id_manual" 
+                                placeholder="or type program name" 
+                                style="flex: 0.5;"
+                            >
+                        </div>
+                        <small style="display: block; margin-top: 5px; color: #666;">Select a program from the list or type the program name/ID</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Add Entry</button>
+                    <button type="reset" class="btn-reset">Clear</button>
+                </div>
+
+                <div id="formMessage" class="message" style="display: none;"></div>
+            </form>
+        </div>
+
+        <!-- Grid Section -->
+        <div class="grid-section">
+            <h3>Course Paper Details</h3>
+            <div class="grid-container">
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Teacher Name</th>
+                            <th>Paper Name</th>
+                            <th>Semester</th>
+                            <th>Theory/Practical</th>
+                            <th>Teacher Status</th>
+                            <th>UPC Code</th>
+                            <th>Paper Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="entriesTableBody">
+                        {% if entries %}
+                            {% for entry in entries %}
+                            <tr data-id="{{ entry.id }}">
+                                <td>{{ entry.id }}</td>
+                                <td>{{ entry.Teacher_Name }}</td>
+                                <td>{{ entry.paper_name }}</td>
+                                <td>{{ entry.Semester }}</td>
+                                <td>{{ entry.Theory_Practical }}</td>
+                                <td>{{ entry.Teacher_Status }}</td>
+                                <td>{{ entry.UPC_code }}</td>
+                                <td>{{ entry.Paper_type }}</td>
+                                <td>
+                                    <button class="btn-edit" onclick="editEntry({{ entry.id }})">Edit</button>
+                                    <button class="btn-delete" onclick="deleteEntry({{ entry.id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="no-data">No entries found</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h2>Edit Entry</h2>
+        <form id="editForm" class="entry-form">
+            <input type="hidden" id="editEntryId">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_teacher_name">Teacher Name:</label>
+                    <input type="text" id="edit_teacher_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit_paper_name">Paper Name:</label>
+                    <input type="text" id="edit_paper_name" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_semester">Semester:</label>
+                    <select id="edit_semester" required>
+                        <option value="1">Semester 1</option>
+                        <option value="2">Semester 2</option>
+                        <option value="3">Semester 3</option>
+                        <option value="4">Semester 4</option>
+                        <option value="5">Semester 5</option>
+                        <option value="6">Semester 6</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit_theory_practical">Theory/Practical:</label>
+                    <select id="edit_theory_practical" required>
+                        <option value="Theory">Theory</option>
+                        <option value="Practical">Practical</option>
+                        <option value="Both">Both</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_teacher_status">Teacher Status:</label>
+                    <select id="edit_teacher_status" required>
+                        <option value="Guest">Guest</option>
+                        <option value="Adhoc">Adhoc</option>
+                        <option value="Permanent">Permanent</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit_upc_code">UPC Code:</label>
+                    <input type="text" id="edit_upc_code" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="edit_paper_type">Paper Type:</label>
+                    <select id="edit_paper_type" required>
+                        <option value="DSC">DSC (Data Science & Computing)</option>
+                        <option value="DSE">DSE (Discipline Specific Elective)</option>
+                        <option value="GE">GE (Generic Elective)</option>
+                        <option value="VAC">VAC (Value Added Course)</option>
+                        <option value="SEC">SEC (Skill Enhancement Course)</option>
+                        <option value="SBC">SBC (Subject Based Elective)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="btn-submit">Update</button>
+                <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Load programs on page load
+    async function loadPrograms() {
+        try {
+            const collegeId = '{{ session.get("college_id") }}';
+            const response = await fetch(`/api/programs/${collegeId}`);
+            const data = await response.json();
+            
+            console.log('Programs API Response:', data);
+            
+            if (data.success) {
+                const programSelect = document.getElementById('course_id');
+                const defaultOption = programSelect.options[0];
+                programSelect.innerHTML = '';
+                programSelect.appendChild(defaultOption);
+                
+                if (data.data && data.data.length > 0) {
+                    data.data.forEach(program => {
+                        const option = document.createElement('option');
+                        option.value = program.id;  // Store Program_id
+                        option.textContent = program.name;  // Display Course_Program_name
+                        programSelect.appendChild(option);
+                    });
+                } else {
+                    console.warn('No programs available for this college');
+                }
+            } else {
+                console.error('Failed to load programs:', data.message);
+            }
+        } catch (error) {
+            console.error('Error loading programs:', error);
+        }
+    }
+
+    // Load entries and programs on page load
+    loadEntries();
+    loadPrograms();
+
+    // Add entry form submission
+    document.getElementById('addEntryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formMessage = document.getElementById('formMessage');
+        
+        // Use manual input if provided, otherwise use dropdown selection
+        const courseIdValue = document.getElementById('course_id_manual').value.trim() || document.getElementById('course_id').value;
+        
+        if (!courseIdValue) {
+            formMessage.style.color = '#ff6b6b';
+            formMessage.textContent = 'Please select or enter a program/course';
+            return;
+        }
+        
+        const entryData = {
+            teacher_name: document.getElementById('teacher_name').value,
+            paper_name: document.getElementById('paper_name').value,
+            semester: document.getElementById('semester').value,
+            theory_practical: document.getElementById('theory_practical').value,
+            teacher_status: document.getElementById('teacher_status').value,
+            upc_code: document.getElementById('upc_code').value,
+            paper_type: document.getElementById('paper_type').value,
+            course_id: courseIdValue,
+        };
+
+        try {
+            const response = await fetch('/api/add-entry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(entryData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                formMessage.textContent = 'Entry added successfully!';
+                formMessage.className = 'message success';
+                formMessage.style.display = 'block';
+                document.getElementById('addEntryForm').reset();
+                setTimeout(() => loadEntries(), 1500);
+            } else {
+                formMessage.textContent = data.message || 'Failed to add entry';
+                formMessage.className = 'message error';
+                formMessage.style.display = 'block';
+            }
+        } catch (error) {
+            formMessage.textContent = 'An error occurred';
+            formMessage.className = 'message error';
+            formMessage.style.display = 'block';
+            console.error('Error:', error);
+        }
+    });
+
+    // Edit form submission
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const entryId = document.getElementById('editEntryId').value;
+        
+        const updateData = {
+            teacher_name: document.getElementById('edit_teacher_name').value,
+            paper_name: document.getElementById('edit_paper_name').value,
+            semester: document.getElementById('edit_semester').value,
+            theory_practical: document.getElementById('edit_theory_practical').value,
+            teacher_status: document.getElementById('edit_teacher_status').value,
+            upc_code: document.getElementById('edit_upc_code').value,
+            paper_type: document.getElementById('edit_paper_type').value,
+        };
+
+        try {
+            const response = await fetch(`/api/update-entry/${entryId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Entry updated successfully!');
+                closeEditModal();
+                loadEntries();
+            } else {
+                alert(data.message || 'Failed to update entry');
+            }
+        } catch (error) {
+            alert('An error occurred');
+            console.error('Error:', error);
+        }
+    });
+
+    async function loadEntries() {
+        try {
+            const response = await fetch(`/api/entries/{{ session.get('college_id') }}`);
+            const data = await response.json();
+
+            const tbody = document.getElementById('entriesTableBody');
+            tbody.innerHTML = '';
+
+            if (data.success && data.data.length > 0) {
+                data.data.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.dataset.id = entry.id;
+                    row.innerHTML = `
+                        <td>${entry.id}</td>
+                        <td>${entry.Teacher_Name}</td>
+                        <td>${entry.paper_name}</td>
+                        <td>${entry.Semester}</td>
+                        <td>${entry.Theory_Practical}</td>
+                        <td>${entry.Teacher_Status}</td>
+                        <td>${entry.UPC_code}</td>
+                        <td>${entry.Paper_type}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editEntry(${entry.id})">Edit</button>
+                            <button class="btn-delete" onclick="deleteEntry(${entry.id})">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="9" class="no-data">No entries found</td></tr>';
+            }
+        } catch (error) {
+            console.error('Error loading entries:', error);
+        }
+    }
+
+    async function editEntry(entryId) {
+        try {
+            const response = await fetch(`/api/entries/{{ session.get('college_id') }}`);
+            const data = await response.json();
+            
+            const entry = data.data.find(e => e.id == entryId);
+            
+            if (entry) {
+                document.getElementById('editEntryId').value = entry.id;
+                document.getElementById('edit_teacher_name').value = entry.Teacher_Name;
+                document.getElementById('edit_paper_name').value = entry.paper_name;
+                document.getElementById('edit_semester').value = entry.Semester;
+                document.getElementById('edit_theory_practical').value = entry.Theory_Practical;
+                document.getElementById('edit_teacher_status').value = entry.Teacher_Status;
+                document.getElementById('edit_upc_code').value = entry.UPC_code;
+                document.getElementById('edit_paper_type').value = entry.Paper_type;
+                
+                document.getElementById('editModal').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error fetching entry:', error);
+        }
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function deleteEntry(entryId) {
+        if (confirm('Are you sure you want to delete this entry?')) {
+            try {
+                const response = await fetch(`/api/delete-entry/${entryId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Entry deleted successfully!');
+                    loadEntries();
+                } else {
+                    alert(data.message || 'Failed to delete entry');
+                }
+            } catch (error) {
+                alert('An error occurred');
+                console.error('Error:', error);
+            }
+        }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
