@@ -109,18 +109,9 @@
 
                     <div class="form-group">
                         <label for="course_id">Program/Course:</label>
-                        <div style="display: flex; gap: 10px;">
-                            <select id="course_id" name="course_id" style="flex: 1;" required>
-                                <option value="">Select from Programs</option>
-                            </select>
-                            <input 
-                                type="text" 
-                                id="course_id_manual" 
-                                placeholder="or type program name" 
-                                style="flex: 0.5;"
-                            >
-                        </div>
-                        <small style="display: block; margin-top: 5px; color: #666;">Select a program from the list or type the program name/ID</small>
+                        <select id="course_id" name="course_id" required>
+                            <option value="">Select Program/Course</option>
+                        </select>
                     </div>
                 </div>
 
@@ -263,17 +254,14 @@
     // Load programs on page load
     async function loadPrograms() {
         try {
-            const collegeId = '{{ session.get("college_id") }}';
-            const response = await fetch(`/api/programs/${collegeId}`);
+            const response = await fetch('/api/programs');
             const data = await response.json();
             
             console.log('Programs API Response:', data);
             
             if (data.success) {
                 const programSelect = document.getElementById('course_id');
-                const defaultOption = programSelect.options[0];
-                programSelect.innerHTML = '';
-                programSelect.appendChild(defaultOption);
+                programSelect.innerHTML = '<option value="">Select Program/Course</option>';
                 
                 if (data.data && data.data.length > 0) {
                     data.data.forEach(program => {
@@ -303,12 +291,11 @@
         
         const formMessage = document.getElementById('formMessage');
         
-        // Use manual input if provided, otherwise use dropdown selection
-        const courseIdValue = document.getElementById('course_id_manual').value.trim() || document.getElementById('course_id').value;
+        const courseIdValue = document.getElementById('course_id').value;
         
         if (!courseIdValue) {
             formMessage.style.color = '#ff6b6b';
-            formMessage.textContent = 'Please select or enter a program/course';
+            formMessage.textContent = 'Please select a program/course';
             return;
         }
         

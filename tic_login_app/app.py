@@ -96,9 +96,22 @@ def add_entry():
         
         # Prepare data for insertion
         course_id = data.get('course_id')
+        if not course_id:
+            return jsonify({'success': False, 'message': 'Please select a program/course'}), 400
+
+        # Course_id must be a valid Program_id from College_Course_Program_Details.
+        program_response = (
+            supabase.table('College_Course_Program_Details')
+            .select('Program_id')
+            .eq('Program_id', int(course_id))
+            .execute()
+        )
+        if not program_response.data:
+            return jsonify({'success': False, 'message': 'Selected program/course is invalid'}), 400
+
         entry_data = {
             'College_id': college_id,
-            'Course_id': int(course_id) if course_id and course_id.strip() else 1,  # Use default 1 if empty
+            'Course_id': int(course_id),
             'Semester': int(data.get('semester')),
             'Paper_type': data.get('paper_type'),
             'paper_name': data.get('paper_name'),
@@ -198,7 +211,12 @@ def logout():
 def get_programs():
     """Get all programs from College_Course_Program_Details"""
     try:
-        response = supabase.table('College_Course_Program_Details').select('Program_id, Course_Program_name').execute()
+        response = (
+            supabase.table('College_Course_Program_Details')
+            .select('Program_id, Course_Program_name')
+            .order('Course_Program_name')
+            .execute()
+        )
         
         programs = []
         if response.data:
