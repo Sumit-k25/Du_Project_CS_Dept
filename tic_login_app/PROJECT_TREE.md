@@ -30,8 +30,7 @@ tic_login_app/
 │
 │
 ├── 💾 APPLICATION FILES
-│   ├── app.py ⭐               (Original Flask app - use this)
-│   └── app_improved.py          (Improved version with better structure)
+│   ├── app.py ⭐               (Flask application)
 │
 │
 ├── 🗄️  DATABASE FILES
@@ -90,7 +89,7 @@ What to do NOW:
 4. Go to Supabase → Run SCHEMA.sql
 5. Insert test data SQL
 6. Run: python app.py
-7. Open: http://localhost:5000
+7. Open: http://localhost:5001
 
 Login with:
   Email: tic@du.edu.in
@@ -206,17 +205,11 @@ Dashboard:
 │   ├── College Name Display
 │   └── Logout Button
 ├── Add Entry Form
-│   ├── Teacher Name
-│   ├── Paper Name
-│   ├── Semester Dropdown (1-6)
-│   ├── Theory/Practical Dropdown
-│   ├── Teacher Status Dropdown
-│   ├── UPC Code
-│   ├── Paper Type
-│   ├── Course ID
+│   ├── Left: Program/Course, Semester, Paper Name, UPC Code
+│   ├── Right: Paper Type, Teacher Name, Teacher Status, Theory/Practical
 │   └── Submit/Reset Buttons
 └── Data Grid Table
-    ├── ID
+    ├── S.No.
     ├── Teacher Name
     ├── Paper Name
     ├── Semester
@@ -277,7 +270,7 @@ Database:
 
 Development:
 - Flask development server (current)
-- localhost:5000
+- localhost:5001
 
 Production:
 - Heroku
@@ -325,7 +318,7 @@ Hosting (Future):
 🎯 SUCCESS CRITERIA
 
 Application is working when:
-✅ Login page loads at http://localhost:5000
+✅ Login page loads at http://localhost:5001
 ✅ Can login with test credentials
 ✅ Dashboard displays without errors
 ✅ College name visible in navbar
@@ -464,7 +457,7 @@ Everything is ready. Now:
 2. Follow QUICK_START.md for setup
 3. Use SETUP_CHECKLIST.md to track progress
 4. Run python app.py
-5. Open http://localhost:5000
+5. Open http://localhost:5001
 
 Good luck! 🚀
 

@@ -36,7 +36,6 @@
 ```
 tic_login_app/
 ├── app.py                      # Main Flask application (original)
-├── app_improved.py             # Improved Flask app with better structure
 ├── config.py                   # Configuration management
 ├── database.py                 # Database helper functions
 ├── requirements.txt            # Python dependencies
@@ -208,22 +207,10 @@ cd tic_login_app
 python3 app.py
 ```
 
-### Method 2: Using Improved App (Recommended)
-
-**Windows:**
-```bash
-python app_improved.py
-```
-
-**Mac/Linux:**
-```bash
-python3 app_improved.py
-```
-
 ### Access the Application
 
 1. Open your browser
-2. Go to: `http://localhost:5000`
+2. Go to: `http://localhost:5001`
 3. You should see the login page
 
 ### Login Credentials (Test User)
@@ -254,8 +241,7 @@ python3 app_improved.py
 
 #### 2. View Entries
 - Grid table displays all entries
-- Shows: ID, Teacher, Paper, Semester, Type, Status, UPC, Actions
-- Sortable columns
+- Shows: S.No., Teacher, Paper, Semester, Type, Status, UPC, Actions
 - Responsive design
 
 #### 3. Edit Entry
@@ -344,9 +330,7 @@ pip install Flask flask-cors python-dotenv requests
 
 **Problem: "Address already in use"**
 ```bash
-# Port 5000 is busy, use different port
-python app.py --port 5001
-# or kill the process using port 5000
+# Port 5001 is busy: stop the process using it, or change the port configured in app.py
 ```
 
 **Problem: "Session expires after page refresh"**
@@ -552,7 +536,6 @@ CMD ["python", "app.py"]
 
 - **v1.0** - Initial release with basic features
 - **v1.1** - Added search functionality and improved UI
-- **v2.0** - Added app_improved.py with better structure
 
 ---
 

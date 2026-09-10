@@ -3,12 +3,17 @@
 {% block title %}Dashboard - TIC Management{% endblock %}
 
 {% block content %}
+{% set paper_type_labels = {
+    'DSC': 'DSC (Discipline Specific Core)',
+    'SBC': 'SBC (Skill Based Course)'
+} %}
 <div class="dashboard-container">
     <nav class="navbar">
         <div class="navbar-content">
             <div class="navbar-brand">
                 <h2>TIC Management System</h2>
                 <p class="college-name">{{ college_name }}</p>
+                <p class="academic-session">Academic Session: 2026–2027 (ODD Semester)</p>
             </div>
             <div class="navbar-menu">
                 <a href="/logout" class="btn-logout">Logout</a>
@@ -21,97 +26,95 @@
         <div class="form-section">
             <h3>Add New Course Paper Details</h3>
             <form id="addEntryForm" class="entry-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="teacher_name">Teacher Name:</label>
-                        <input 
-                            type="text" 
-                            id="teacher_name" 
-                            name="teacher_name" 
-                            placeholder="Enter teacher name" 
-                            required
-                        >
+                <div class="form-columns">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="course_id">Program/Course:</label>
+                            <select id="course_id" name="course_id" required>
+                                <option value="">Select Program/Course</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="semester">Semester:</label>
+                            <select id="semester" name="semester" required>
+                                <option value="">Select Semester</option>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3">Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6">Semester 6</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paper_name">Paper Name:</label>
+                            <input
+                                type="text"
+                                id="paper_name"
+                                name="paper_name"
+                                placeholder="Enter paper name"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="upc_code">UPC Code:</label>
+                            <input
+                                type="text"
+                                id="upc_code"
+                                name="upc_code"
+                                placeholder="Enter UPC code"
+                                required
+                            >
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="paper_name">Paper Name:</label>
-                        <input 
-                            type="text" 
-                            id="paper_name" 
-                            name="paper_name" 
-                            placeholder="Enter paper name" 
-                            required
-                        >
-                    </div>
-                </div>
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="paper_type">Paper Type:</label>
+                            <select id="paper_type" name="paper_type" required>
+                                <option value="">Select Paper Type</option>
+                                <option value="DSC">DSC (Discipline Specific Core)</option>
+                                <option value="DSE">DSE (Discipline Specific Elective)</option>
+                                <option value="GE">GE (Generic Elective)</option>
+                                <option value="VAC">VAC (Value Added Course)</option>
+                                <option value="SEC">SEC (Skill Enhancement Course)</option>
+                                <option value="SBC">SBC (Skill Based Course)</option>
+                            </select>
+                        </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="semester">Semester:</label>
-                        <select id="semester" name="semester" required>
-                            <option value="">Select Semester</option>
-                            <option value="1">Semester 1</option>
-                            <option value="2">Semester 2</option>
-                            <option value="3">Semester 3</option>
-                            <option value="4">Semester 4</option>
-                            <option value="5">Semester 5</option>
-                            <option value="6">Semester 6</option>
-                        </select>
-                    </div>
+                        <div class="form-group">
+                            <label for="teacher_name">Teacher Name:</label>
+                            <input
+                                type="text"
+                                id="teacher_name"
+                                name="teacher_name"
+                                placeholder="Teacher name who is teaching"
+                                required
+                            >
+                        </div>
 
-                    <div class="form-group">
-                        <label for="theory_practical">Theory/Practical:</label>
-                        <select id="theory_practical" name="theory_practical" required>
-                            <option value="">Select Type</option>
-                            <option value="Theory">Theory</option>
-                            <option value="Practical">Practical</option>
-                            <option value="Both">Both</option>
-                        </select>
-                    </div>
-                </div>
+                        <div class="form-group">
+                            <label for="teacher_status">Teacher Status:</label>
+                            <select id="teacher_status" name="teacher_status" required>
+                                <option value="">Select Status</option>
+                                <option value="Guest">Guest</option>
+                                <option value="Adhoc">Adhoc</option>
+                                <option value="Permanent">Permanent</option>
+                            </select>
+                        </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="teacher_status">Teacher Status:</label>
-                        <select id="teacher_status" name="teacher_status" required>
-                            <option value="">Select Status</option>
-                            <option value="Guest">Guest</option>
-                            <option value="Adhoc">Adhoc</option>
-                            <option value="Permanent">Permanent</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="upc_code">UPC Code:</label>
-                        <input 
-                            type="text" 
-                            id="upc_code" 
-                            name="upc_code" 
-                            placeholder="Enter UPC code" 
-                            required
-                        >
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="paper_type">Paper Type:</label>
-                        <select id="paper_type" name="paper_type" required>
-                            <option value="">Select Paper Type</option>
-                            <option value="DSC">DSC (Data Science & Computing)</option>
-                            <option value="DSE">DSE (Discipline Specific Elective)</option>
-                            <option value="GE">GE (Generic Elective)</option>
-                            <option value="VAC">VAC (Value Added Course)</option>
-                            <option value="SEC">SEC (Skill Enhancement Course)</option>
-                            <option value="SBC">SBC (Subject Based Elective)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="course_id">Program/Course:</label>
-                        <select id="course_id" name="course_id" required>
-                            <option value="">Select Program/Course</option>
-                        </select>
+                        <div class="form-group">
+                            <label for="theory_practical">Theory/Practical:</label>
+                            <select id="theory_practical" name="theory_practical" required>
+                                <option value="">Select Type</option>
+                                <option value="Theory">Theory</option>
+                                <option value="Practical">Practical</option>
+                                <option value="Both">Both</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -131,7 +134,7 @@
                 <table class="data-grid">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>S.No.</th>
                             <th>Teacher Name</th>
                             <th>Paper Name</th>
                             <th>Semester</th>
@@ -146,14 +149,14 @@
                         {% if entries %}
                             {% for entry in entries %}
                             <tr data-id="{{ entry.id }}">
-                                <td>{{ entry.id }}</td>
+                                <td>{{ loop.index }}</td>
                                 <td>{{ entry.Teacher_Name }}</td>
                                 <td>{{ entry.paper_name }}</td>
                                 <td>{{ entry.Semester }}</td>
                                 <td>{{ entry.Theory_Practical }}</td>
                                 <td>{{ entry.Teacher_Status }}</td>
                                 <td>{{ entry.UPC_code }}</td>
-                                <td>{{ entry.Paper_type }}</td>
+                                <td>{{ paper_type_labels.get(entry.Paper_type, entry.Paper_type) }}</td>
                                 <td>
                                     <button class="btn-edit" onclick="editEntry({{ entry.id }})">Edit</button>
                                     <button class="btn-delete" onclick="deleteEntry({{ entry.id }})">Delete</button>
@@ -232,12 +235,12 @@
                 <div class="form-group">
                     <label for="edit_paper_type">Paper Type:</label>
                     <select id="edit_paper_type" required>
-                        <option value="DSC">DSC (Data Science & Computing)</option>
+                        <option value="DSC">DSC (Discipline Specific Core)</option>
                         <option value="DSE">DSE (Discipline Specific Elective)</option>
                         <option value="GE">GE (Generic Elective)</option>
                         <option value="VAC">VAC (Value Added Course)</option>
                         <option value="SEC">SEC (Skill Enhancement Course)</option>
-                        <option value="SBC">SBC (Subject Based Elective)</option>
+                        <option value="SBC">SBC (Skill Based Course)</option>
                     </select>
                 </div>
             </div>
@@ -251,6 +254,15 @@
 </div>
 
 <script>
+    function formatPaperType(paperType) {
+        const paperTypeLabels = {
+            DSC: 'DSC (Discipline Specific Core)',
+            SBC: 'SBC (Skill Based Course)',
+        };
+
+        return paperTypeLabels[paperType] || paperType;
+    }
+
     // Load programs on page load
     async function loadPrograms() {
         try {
@@ -389,18 +401,18 @@
             tbody.innerHTML = '';
 
             if (data.success && data.data.length > 0) {
-                data.data.forEach(entry => {
+                data.data.forEach((entry, index) => {
                     const row = document.createElement('tr');
                     row.dataset.id = entry.id;
                     row.innerHTML = `
-                        <td>${entry.id}</td>
+                        <td>${index + 1}</td>
                         <td>${entry.Teacher_Name}</td>
                         <td>${entry.paper_name}</td>
                         <td>${entry.Semester}</td>
                         <td>${entry.Theory_Practical}</td>
                         <td>${entry.Teacher_Status}</td>
                         <td>${entry.UPC_code}</td>
-                        <td>${entry.Paper_type}</td>
+                        <td>${formatPaperType(entry.Paper_type)}</td>
                         <td>
                             <button class="btn-edit" onclick="editEntry(${entry.id})">Edit</button>
                             <button class="btn-delete" onclick="deleteEntry(${entry.id})">Delete</button>

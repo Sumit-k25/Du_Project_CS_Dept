@@ -62,20 +62,6 @@
 
 ---
 
-#### `app_improved.py` (Recommended)
-- **Purpose**: Enhanced Flask app with better structure
-- **Size**: ~300 lines
-- **Improvements**: Uses config.py and database.py
-- **Use Case**: Production-ready, modular design
-
-**Key Advantages:**
-- Separation of concerns
-- Reusable database functions
-- Better error handling
-- Configuration management
-
----
-
 ### Configuration Files
 
 #### `config.py`
@@ -484,7 +470,6 @@ FK: College_id → College_Details.College_Code
 | File | Lines | Size |
 |------|-------|------|
 | app.py | 350 | ~12KB |
-| app_improved.py | 300 | ~11KB |
 | database.py | 200 | ~7KB |
 | dashboard.html | 300 | ~13KB |
 | style.css | 500 | ~16KB |

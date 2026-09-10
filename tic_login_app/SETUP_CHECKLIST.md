@@ -86,13 +86,13 @@ VALUES ('tic@du.edu.in', 'password123');
 ## Step 6: Run Application
 - [ ] Open terminal in `tic_login_app` folder
 - [ ] Run: `python app.py` (or `python3 app.py` on Mac/Linux)
-- [ ] You should see: "Running on http://localhost:5000"
+- [ ] You should see: "Running on http://localhost:5001"
 - [ ] No errors in terminal
 - [ ] Terminal shows "WARNING: This is a development server"
 
 ## Step 7: Access Application
 - [ ] Open web browser (Chrome, Firefox, Safari, Edge)
-- [ ] Go to: `http://localhost:5000`
+- [ ] Go to: `http://localhost:5001`
 - [ ] You should see login page
 - [ ] Page loads without errors
 
@@ -170,8 +170,8 @@ If something doesn't work:
 
 ### Application Issues
 - [ ] Flask started successfully
-- [ ] No port conflicts (5000 available)
-- [ ] Can access http://localhost:5000
+- [ ] No port conflicts (5001 available)
+- [ ] Can access http://localhost:5001
 - [ ] Login page loads
 - [ ] JavaScript console shows no errors (F12)
 
@@ -196,7 +196,7 @@ If something doesn't work:
 | Connection refused | Check SUPABASE_URL and KEY are correct |
 | tic_mail column not found | Run SCHEMA.sql in Supabase |
 | Login fails | Check password is exactly `password123` |
-| Port 5000 in use | Change port: `python app.py --port 5001` |
+| Port 5001 in use | Stop the process using port 5001 or change the configured port in `app.py` |
 | Table not found | Verify all tables created from SCHEMA.sql |
 
 ---

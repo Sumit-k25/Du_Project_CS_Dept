@@ -16,10 +16,9 @@ Your complete Flask application for TIC Login & Course Paper Management has been
 
 ## 📋 Files Created
 
-### Core Application (3 files)
-1. **app.py** - Main Flask application (original, monolithic)
-2. **app_improved.py** - Improved Flask app (recommended, modular)
-3. **config.py** - Configuration management
+### Core Application (2 files)
+1. **app.py** - Main Flask application
+2. **config.py** - Configuration management
 
 ### Database Layer (2 files)
 4. **database.py** - Database helper functions
@@ -90,7 +89,7 @@ VALUES ('tic@du.edu.in', 'password123');
 ```bash
 python app.py
 ```
-Then open: `http://localhost:5000`
+Then open: `http://localhost:5001`
 
 ### Login with:
 - Email: `tic@du.edu.in`
@@ -330,7 +329,7 @@ For more: See **SETUP_CHECKLIST.md** → Troubleshooting
 1. **QUICK_START.md** (5 min) - Get running quickly
 2. **SETUP_CHECKLIST.md** (follow along) - Track progress
 3. **dashboard.html** (10 min) - Understand UI
-4. **app.py or app_improved.py** (20 min) - Understand logic
+4. **app.py** (20 min) - Understand logic
 5. **README.md** (15 min) - Full reference
 6. **PROJECT_STRUCTURE.md** (20 min) - Deep dive
 
@@ -344,7 +343,7 @@ For more: See **SETUP_CHECKLIST.md** → Troubleshooting
 - Customize styling
 
 **Intermediate**: Understand the code
-- Read app_improved.py
+- Read app.py
 - Study database.py
 - Modify templates
 
@@ -357,7 +356,6 @@ For more: See **SETUP_CHECKLIST.md** → Troubleshooting
 
 ## ✨ Key Improvements Made
 
-✅ Modular code structure (app_improved.py)  
 ✅ Database helper functions (database.py)  
 ✅ Configuration management (config.py)  
 ✅ Comprehensive documentation (6 guides)  
@@ -373,7 +371,7 @@ For more: See **SETUP_CHECKLIST.md** → Troubleshooting
 ## 🎯 Success Criteria
 
 You'll know it's working when:
-1. ✅ Login page loads at `http://localhost:5000`
+1. ✅ Login page loads at `http://localhost:5001`
 2. ✅ Can login with test credentials
 3. ✅ Dashboard displays college name
 4. ✅ Can add new entries
@@ -413,7 +411,7 @@ Follow this path:
 3. Execute `SCHEMA.sql` in Supabase
 4. Insert test data
 5. Run `python app.py`
-6. Open `http://localhost:5000`
+6. Open `http://localhost:5001`
 
 **Happy coding! 🎓**
 

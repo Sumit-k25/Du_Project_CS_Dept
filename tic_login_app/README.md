@@ -5,14 +5,15 @@ A Flask-based web application for managing teacher course paper details at Delhi
 ## Features
 
 ✅ **TIC Authentication** - Secure login with email and password  
-✅ **Dashboard** - Personalized dashboard showing college name  
-✅ **Add Entries** - Form to add new course paper teaching details  
-✅ **Grid View** - Display all course papers in a searchable table  
+✅ **Dashboard** - Personalized dashboard showing the college name and academic session  
+✅ **Add Entries** - Two-column form for new course paper teaching details  
+✅ **Grid View** - Display all course papers with a user-facing S.No. column  
 ✅ **Edit/Delete** - Modify or remove course paper entries  
 ✅ **Dropdown Menus** - Pre-defined selections for:
    - Semester (1-6)
    - Theory/Practical (Theory, Practical, Both)
    - Teacher Status (Guest, Adhoc, Permanent)
+   - Paper Type, including DSC (Discipline Specific Core) and SBC (Skill Based Course)
 
 ✅ **Responsive Design** - Works on desktop, tablet, and mobile
 
@@ -132,7 +133,7 @@ VALUES ('tic@du.edu.in', 'password123');
 python app.py
 ```
 
-The application will start on `http://localhost:5000`
+The application will start on `http://localhost:5001`
 
 ### 6. Login
 
@@ -171,6 +172,7 @@ tic_login_app/
 - `GET /api/entries/<college_id>` - Get all entries for college
 - `PUT /api/update-entry/<entry_id>` - Update entry
 - `DELETE /api/delete-entry/<entry_id>` - Delete entry
+- `GET /api/programs` - Get Program/Course options
 
 ## Key Features Explained
 
@@ -181,23 +183,23 @@ tic_login_app/
 - Stores session data for authenticated access
 
 ### 2. Dashboard
-- Displays college name in navbar
-- Form to add new course paper details
+- Displays the college name and Academic Session: 2026–2027 (ODD Semester) in the navbar
+- Shows a two-column form: Program/Course, Semester, Paper Name, and UPC Code on the left; Paper Type, Teacher Name, Teacher Status, and Theory/Practical on the right
 - Grid table showing all entries for that college
 - Edit and delete buttons for each entry
 
 ### 3. Form Fields
-- **Teacher Name**: Full name of the teacher
+- **Program/Course**: Course linked to the logged-in college
+- **Teacher Name**: Full name of the teacher teaching the paper
 - **Paper Name**: Name of the course paper
 - **Semester**: Dropdown (1-6)
 - **Theory/Practical**: Dropdown (Theory, Practical, Both)
 - **Teacher Status**: Dropdown (Guest, Adhoc, Permanent)
 - **UPC Code**: Unique paper code
-- **Paper Type**: Type classification
-- **Course ID**: Associated course ID
+- **Paper Type**: Type classification, such as DSC (Discipline Specific Core) or SBC (Skill Based Course)
 
 ### 4. Grid Display
-- Sortable columns
+- S.No. sequence column instead of the internal database ID
 - Responsive table design
 - Action buttons (Edit/Delete)
 - Modal window for editing entries

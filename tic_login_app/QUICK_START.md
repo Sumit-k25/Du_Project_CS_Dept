@@ -62,17 +62,13 @@ ON CONFLICT (tic_mail) DO NOTHING;
 ## Step 7: Run the Application
 
 ```bash
-# Option 1: Run the original app
 python app.py
-
-# Option 2: Run the improved app (recommended)
-python app_improved.py
 ```
 
 ## Step 8: Access the Application
 
 1. Open your browser
-2. Go to: **http://localhost:5000**
+2. Go to: **http://localhost:5001**
 3. Login with:
    - Email: `tic@du.edu.in`
    - Password: `password123`
