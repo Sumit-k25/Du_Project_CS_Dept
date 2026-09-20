@@ -24,6 +24,12 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def normalize_person_name(name):
+    """Store each name with one space between words and title casing."""
+    if name is None:
+        return ''
+    return ' '.join(str(name).strip().split()).title()
+
 # ============= ROUTES =============
 
 @app.route('/')
@@ -130,7 +136,7 @@ def add_entry():
             'Paper_type': data.get('paper_type'),
             'paper_id': int(paper_id),
             'UPC_code': data.get('upc_code') or paper_master.data[0].get('UPC_Code'),
-            'Teacher_Name': data.get('teacher_name'),
+            'Teacher_Name': normalize_person_name(data.get('teacher_name')),
             'Theory_Practical': data.get('theory_practical'),
             'Teacher_Status': data.get('teacher_status'),
         }
@@ -264,7 +270,7 @@ def update_entry(entry_id):
             return jsonify({'success': False, 'message': 'Selected paper is invalid for this course'}), 400
 
         update_data = {
-            'Teacher_Name': data.get('teacher_name'),
+            'Teacher_Name': normalize_person_name(data.get('teacher_name')),
             'paper_id': int(paper_id),
             'Semester': int(data.get('semester')),
             'Theory_Practical': data.get('theory_practical'),
