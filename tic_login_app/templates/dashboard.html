@@ -33,6 +33,10 @@
                             <select id="course_id" name="course_id" required>
                                 <option value="">Select Course</option>
                             </select>
+                            <div id="course_loader" class="field-loader">
+                                <span class="spinner loading-spinner"></span>
+                                <span>Loading courses...</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -40,6 +44,10 @@
                             <select id="semester" name="semester" required>
                                 <option value="">Select Semester</option>
                             </select>
+                            <div id="semester_loader" class="field-loader">
+                                <span class="spinner loading-spinner"></span>
+                                <span>Loading semesters...</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -47,6 +55,10 @@
                             <select id="paper_type" name="paper_type" required>
                                 <option value="">Select Paper Type</option>
                             </select>
+                            <div id="paper_type_loader" class="field-loader">
+                                <span class="spinner loading-spinner"></span>
+                                <span>Loading paper types...</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -54,6 +66,10 @@
                             <select id="paper_name" name="paper_name" required>
                                 <option value="">Select Paper Name</option>
                             </select>
+                            <div id="paper_name_loader" class="field-loader">
+                                <span class="spinner loading-spinner"></span>
+                                <span>Loading paper names...</span>
+                            </div>
                         </div>
                     </div>
 
@@ -104,7 +120,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn-submit">Add Entry</button>
+                    <button type="submit" class="btn-submit" id="submitEntryBtn">Add Entry</button>
                     <button type="reset" class="btn-reset">Clear</button>
                 </div>
 
@@ -116,6 +132,17 @@
         <div class="grid-section">
             <h3>Course Paper Details</h3>
             <div class="grid-container">
+                <div id="entriesLoader" class="entries-loader" aria-live="polite" aria-label="Loading course paper details">
+                    <div class="skeleton-table" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="table-loading-message">
+                        <span class="spinner loading-spinner"></span>
+                        <span>Loading course paper details...</span>
+                    </div>
+                </div>
                 <table class="data-grid">
                     <thead>
                         <tr>
@@ -253,6 +280,23 @@
         selectElement.disabled = true;
     }
 
+    function setLoader(loaderId, isLoading, labelText = '') {
+        const loader = document.getElementById(loaderId);
+        if (!loader) return;
+
+        loader.style.display = isLoading ? 'inline-flex' : 'none';
+        const label = loader.querySelector('span:last-child');
+        if (label && labelText) {
+            label.textContent = labelText;
+        }
+    }
+
+    function setSelectLoading(selectElement, isLoading) {
+        if (!selectElement) return;
+        selectElement.disabled = isLoading;
+        selectElement.classList.toggle('select-loading', isLoading);
+    }
+
     function setSelectOptions(selectElement, items, placeholder) {
         clearSelect(selectElement, placeholder);
         if (items && items.length > 0) {
@@ -267,6 +311,10 @@
     }
 
     async function loadPrograms() {
+        const programSelect = document.getElementById('course_id');
+        setLoader('course_loader', true);
+        setSelectLoading(programSelect, true);
+
         try {
             const response = await fetch('/api/programs');
             const data = await response.json();
@@ -274,7 +322,6 @@
             console.log('Programs API Response:', data);
             
             if (data.success) {
-                const programSelect = document.getElementById('course_id');
                 programSelect.innerHTML = '<option value="">Select Course</option>';
                 
                 if (data.data && data.data.length > 0) {
@@ -290,6 +337,9 @@
             }
         } catch (error) {
             console.error('Error loading programs:', error);
+        } finally {
+            setLoader('course_loader', false);
+            setSelectLoading(programSelect, false);
         }
     }
 
@@ -309,6 +359,9 @@
             return;
         }
 
+        setLoader('semester_loader', true);
+        setSelectLoading(semesterSelect, true);
+
         try {
             const response = await fetch(`/api/paper-semesters?course_id=${courseId}`);
             const data = await response.json();
@@ -318,6 +371,9 @@
             }
         } catch (error) {
             console.error('Error loading paper semesters:', error);
+        } finally {
+            setLoader('semester_loader', false);
+            setSelectLoading(semesterSelect, false);
         }
     }
 
@@ -336,6 +392,9 @@
             return;
         }
 
+        setLoader('paper_type_loader', true);
+        setSelectLoading(paperTypeSelect, true);
+
         try {
             const response = await fetch(`/api/paper-types?course_id=${courseId}&semester=${semester}`);
             const data = await response.json();
@@ -345,6 +404,9 @@
             }
         } catch (error) {
             console.error('Error loading paper types:', error);
+        } finally {
+            setLoader('paper_type_loader', false);
+            setSelectLoading(paperTypeSelect, false);
         }
     }
 
@@ -361,6 +423,9 @@
         if (!courseId || !semester || !paperType) {
             return;
         }
+
+        setLoader('paper_name_loader', true);
+        setSelectLoading(paperNameSelect, true);
 
         try {
             const response = await fetch(`/api/paper-names?course_id=${courseId}&semester=${semester}&paper_type=${encodeURIComponent(paperType)}`);
@@ -386,6 +451,9 @@
             }
         } catch (error) {
             console.error('Error loading paper names:', error);
+        } finally {
+            setLoader('paper_name_loader', false);
+            setSelectLoading(paperNameSelect, false);
         }
     }
 
@@ -412,12 +480,19 @@
         e.preventDefault();
         
         const formMessage = document.getElementById('formMessage');
+        const submitButton = document.getElementById('submitEntryBtn');
+        submitButton.disabled = true;
+        submitButton.classList.add('loading');
+        submitButton.textContent = 'Adding...';
         
         const courseIdValue = document.getElementById('course_id').value;
         
         if (!courseIdValue) {
             formMessage.style.color = '#ff6b6b';
             formMessage.textContent = 'Please select a program/course';
+            submitButton.disabled = false;
+            submitButton.classList.remove('loading');
+            submitButton.textContent = 'Add Entry';
             return;
         }
         
@@ -459,6 +534,10 @@
             formMessage.className = 'message error';
             formMessage.style.display = 'block';
             console.error('Error:', error);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.classList.remove('loading');
+            submitButton.textContent = 'Add Entry';
         }
     });
 
@@ -503,6 +582,9 @@
     });
 
     async function loadEntries() {
+        const entriesLoader = document.getElementById('entriesLoader');
+        entriesLoader.classList.add('visible');
+
         try {
             const response = await fetch(`/api/entries/{{ session.get('college_id') }}`);
             const data = await response.json();
@@ -535,6 +617,8 @@
             }
         } catch (error) {
             console.error('Error loading entries:', error);
+        } finally {
+            entriesLoader.classList.remove('visible');
         }
     }
 
