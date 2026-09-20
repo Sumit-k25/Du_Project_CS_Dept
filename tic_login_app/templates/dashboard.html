@@ -130,7 +130,13 @@
 
         <!-- Grid Section -->
         <div class="grid-section">
-            <h3>Course Paper Details</h3>
+            <div class="grid-heading">
+                <h3>Course Paper Details</h3>
+                <button type="button" id="refreshEntriesBtn" class="btn-refresh" onclick="refreshEntries()" title="Refresh course paper details" aria-label="Refresh course paper details">
+                    <span aria-hidden="true">&#8635;</span>
+                    <span>Refresh</span>
+                </button>
+            </div>
             <div class="grid-container">
                 <div id="entriesLoader" class="entries-loader" aria-live="polite" aria-label="Loading course paper details">
                     <div class="skeleton-table" aria-hidden="true">
@@ -620,6 +626,15 @@
         } finally {
             entriesLoader.classList.remove('visible');
         }
+    }
+
+    async function refreshEntries() {
+        const refreshButton = document.getElementById('refreshEntriesBtn');
+        refreshButton.disabled = true;
+        refreshButton.classList.add('loading');
+        await loadEntries();
+        refreshButton.disabled = false;
+        refreshButton.classList.remove('loading');
     }
 
     async function editEntry(entryId) {
