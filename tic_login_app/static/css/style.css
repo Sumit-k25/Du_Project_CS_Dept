@@ -414,7 +414,7 @@ body {
     z-index: 2;
     min-width: 720px;
     padding: 15px;
-    background: rgba(255, 255, 255, 0.92);
+    background: #ffffff;
 }
 
 .entries-loader.visible {
