@@ -109,13 +109,27 @@ def add_entry():
         if not program_response.data:
             return jsonify({'success': False, 'message': 'Selected program/course is invalid'}), 400
 
+        paper_id = data.get('paper_id')
+        if not paper_id:
+            return jsonify({'success': False, 'message': 'Please select a paper name'}), 400
+
+        paper_master = (
+            supabase.table('Paper_Details')
+            .select('paper_id, Paper_Name, UPC_Code')
+            .eq('program_id', int(course_id))
+            .eq('paper_id', int(paper_id))
+            .execute()
+        )
+        if not paper_master.data:
+            return jsonify({'success': False, 'message': 'Selected paper is invalid for this course'}), 400
+
         entry_data = {
             'College_id': college_id,
             'Course_id': int(course_id),
             'Semester': int(data.get('semester')),
             'Paper_type': data.get('paper_type'),
-            'paper_name': data.get('paper_name'),
-            'UPC_code': data.get('upc_code'),
+            'paper_id': int(paper_id),
+            'UPC_code': data.get('upc_code') or paper_master.data[0].get('UPC_Code'),
             'Teacher_Name': data.get('teacher_name'),
             'Theory_Practical': data.get('theory_practical'),
             'Teacher_Status': data.get('teacher_status'),
@@ -133,19 +147,73 @@ def add_entry():
         print(f"Error adding entry: {str(e)}")
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
+def _resolve_paper_name_from_legacy_id(course_id, value):
+    if value is None:
+        return value
+
+    try:
+        numeric_value = int(str(value).strip())
+    except (TypeError, ValueError):
+        return value
+
+    try:
+        response = (
+            supabase.table('Paper_Details')
+            .select('*')
+            .eq('program_id', int(course_id))
+            .eq('paper_id', numeric_value)
+            .execute()
+        )
+        if response.data and len(response.data) > 0:
+            return response.data[0].get('Paper_Name') or value
+    except Exception as e:
+        print(f"Error resolving legacy paper name: {str(e)}")
+
+    return value
+
+
+def _resolve_paper_name_for_entry(entry):
+    course_id = entry.get('Course_id')
+    paper_id = entry.get('paper_id')
+    paper_name = entry.get('paper_name')
+
+    if paper_id is not None:
+        try:
+            response = (
+                supabase.table('Paper_Details')
+                .select('Paper_Name')
+                .eq('program_id', int(course_id))
+                .eq('paper_id', int(paper_id))
+                .execute()
+            )
+            if response.data and len(response.data) > 0:
+                return response.data[0].get('Paper_Name')
+        except Exception as e:
+            print(f"Error resolving paper name for entry: {str(e)}")
+
+    if paper_name is not None:
+        return _resolve_paper_name_from_legacy_id(course_id, paper_name)
+
+    return None
+
+
 @app.route('/api/entries/<college_id>')
 @login_required
 def get_entries(college_id):
     try:
-        # Verify user belongs to this college
         if int(college_id) != session.get('college_id'):
             return jsonify({'success': False, 'message': 'Unauthorized'}), 403
-        
+
         response = supabase.table('College_Course_Teaching_Details').select('*').eq('College_id', college_id).execute()
         entries = response.data if response.data else []
-        
+
+        for entry in entries:
+            resolved_name = _resolve_paper_name_for_entry(entry)
+            if resolved_name is not None:
+                entry['paper_name'] = resolved_name
+
         return jsonify({'success': True, 'data': entries}), 200
-        
+
     except Exception as e:
         print(f"Error fetching entries: {str(e)}")
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
@@ -181,15 +249,28 @@ def update_entry(entry_id):
         if not response.data or response.data[0]['College_id'] != college_id:
             return jsonify({'success': False, 'message': 'Unauthorized'}), 403
         
-        # Prepare update data
+        paper_id = data.get('paper_id')
+        if not paper_id:
+            return jsonify({'success': False, 'message': 'Please select a paper name'}), 400
+
+        paper_master = (
+            supabase.table('Paper_Details')
+            .select('paper_id, UPC_Code')
+            .eq('program_id', int(response.data[0].get('Course_id')))
+            .eq('paper_id', int(paper_id))
+            .execute()
+        )
+        if not paper_master.data:
+            return jsonify({'success': False, 'message': 'Selected paper is invalid for this course'}), 400
+
         update_data = {
             'Teacher_Name': data.get('teacher_name'),
-            'paper_name': data.get('paper_name'),
+            'paper_id': int(paper_id),
             'Semester': int(data.get('semester')),
             'Theory_Practical': data.get('theory_practical'),
             'Teacher_Status': data.get('teacher_status'),
             'Paper_type': data.get('paper_type'),
-            'UPC_code': data.get('upc_code'),
+            'UPC_code': data.get('upc_code') or paper_master.data[0].get('UPC_Code'),
         }
         
         # Update in Supabase
@@ -205,6 +286,38 @@ def update_entry(entry_id):
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+def _first_available_value(record, *keys):
+    for key in keys:
+        if key in record and record.get(key) is not None:
+            return record.get(key)
+    return None
+
+
+def _get_paper_records(course_id=None, semester=None, paper_type=None):
+    try:
+        response = supabase.table('Paper_Details').select('*').execute()
+        records = response.data or []
+    except Exception as e:
+        print(f"Error fetching paper details: {str(e)}")
+        return []
+
+    filtered = []
+    for record in records:
+        program_value = _first_available_value(record, 'program_id', 'Program_id', 'Course_id', 'course_id', 'Course_Id')
+        semester_value = _first_available_value(record, 'Semester', 'semester')
+        paper_type_value = _first_available_value(record, 'Paper_type', 'paper_type', 'Paper_Type')
+
+        if course_id is not None and course_id != '' and program_value is not None and str(program_value) != str(course_id):
+            continue
+        if semester is not None and semester != '' and semester_value is not None and str(semester_value) != str(semester):
+            continue
+        if paper_type is not None and paper_type != '' and paper_type_value is not None and str(paper_type_value).strip().lower() != str(paper_type).strip().lower():
+            continue
+        filtered.append(record)
+
+    return filtered
+
 
 @app.route('/api/programs')
 @login_required
@@ -230,6 +343,90 @@ def get_programs():
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/paper-semesters')
+@login_required
+def get_paper_semesters():
+    try:
+        course_id = request.args.get('course_id')
+        records = _get_paper_records(course_id=course_id)
+        semesters = []
+
+        for record in records:
+            value = _first_available_value(record, 'Semester', 'semester')
+            if value is not None:
+                semesters.append(int(value))
+
+        unique_semesters = sorted(set(semesters))
+        data = [{'id': semester, 'name': f'Semester {semester}'} for semester in unique_semesters]
+        return jsonify({'success': True, 'data': data}), 200
+    except Exception as e:
+        print(f"Error fetching paper semesters: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/paper-types')
+@login_required
+def get_paper_types():
+    try:
+        course_id = request.args.get('course_id')
+        semester = request.args.get('semester')
+        records = _get_paper_records(course_id=course_id, semester=semester)
+
+        paper_types = []
+        for record in records:
+            value = _first_available_value(record, 'Paper_type', 'paper_type', 'Paper_Type')
+            if value is not None:
+                paper_types.append(str(value).strip())
+
+        unique_types = []
+        for paper_type in paper_types:
+            if paper_type not in unique_types:
+                unique_types.append(paper_type)
+
+        data = [{'id': paper_type, 'name': paper_type} for paper_type in unique_types]
+        return jsonify({'success': True, 'data': data}), 200
+    except Exception as e:
+        print(f"Error fetching paper types: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+
+@app.route('/api/paper-names')
+@login_required
+def get_paper_names():
+    try:
+        course_id = request.args.get('course_id')
+        semester = request.args.get('semester')
+        paper_type = request.args.get('paper_type')
+        records = _get_paper_records(course_id=course_id, semester=semester, paper_type=paper_type)
+
+        paper_names = []
+        for record in records:
+            name = _first_available_value(record, 'Paper_Name', 'paper_name', 'PaperName', 'Paper Name')
+            upc = _first_available_value(record, 'UPC_Code', 'UPC_code', 'upc_code', 'UPC Code')
+            paper_id = _first_available_value(record, 'paper_id', 'Paper_id', 'Paper_ID')
+            if name is not None:
+                paper_names.append({
+                    'id': str(paper_id).strip() if paper_id is not None else str(name).strip(),
+                    'paper_id': str(paper_id).strip() if paper_id is not None else str(name).strip(),
+                    'name': str(name).strip(),
+                    'upc_code': str(upc).strip() if upc is not None else ''
+                })
+
+        unique_names = []
+        seen = set()
+        for paper in paper_names:
+            key = paper['id']
+            if key not in seen:
+                seen.add(key)
+                unique_names.append(paper)
+
+        return jsonify({'success': True, 'data': unique_names}), 200
+    except Exception as e:
+        print(f"Error fetching paper names: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

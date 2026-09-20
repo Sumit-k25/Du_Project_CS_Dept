@@ -29,9 +29,9 @@
                 <div class="form-columns">
                     <div class="form-column">
                         <div class="form-group">
-                            <label for="course_id">Program/Course:</label>
+                            <label for="course_id">Course:</label>
                             <select id="course_id" name="course_id" required>
-                                <option value="">Select Program/Course</option>
+                                <option value="">Select Course</option>
                             </select>
                         </div>
 
@@ -39,50 +39,35 @@
                             <label for="semester">Semester:</label>
                             <select id="semester" name="semester" required>
                                 <option value="">Select Semester</option>
-                                <option value="1">Semester 1</option>
-                                <option value="2">Semester 2</option>
-                                <option value="3">Semester 3</option>
-                                <option value="4">Semester 4</option>
-                                <option value="5">Semester 5</option>
-                                <option value="6">Semester 6</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paper_type">Paper Type:</label>
+                            <select id="paper_type" name="paper_type" required>
+                                <option value="">Select Paper Type</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="paper_name">Paper Name:</label>
-                            <input
-                                type="text"
-                                id="paper_name"
-                                name="paper_name"
-                                placeholder="Enter paper name"
-                                required
-                            >
+                            <select id="paper_name" name="paper_name" required>
+                                <option value="">Select Paper Name</option>
+                            </select>
                         </div>
+                    </div>
 
+                    <div class="form-column">
                         <div class="form-group">
                             <label for="upc_code">UPC Code:</label>
                             <input
                                 type="text"
                                 id="upc_code"
                                 name="upc_code"
-                                placeholder="Enter UPC code"
+                                placeholder="UPC code will auto-fill"
+                                readonly
                                 required
                             >
-                        </div>
-                    </div>
-
-                    <div class="form-column">
-                        <div class="form-group">
-                            <label for="paper_type">Paper Type:</label>
-                            <select id="paper_type" name="paper_type" required>
-                                <option value="">Select Paper Type</option>
-                                <option value="DSC">DSC (Discipline Specific Core)</option>
-                                <option value="DSE">DSE (Discipline Specific Elective)</option>
-                                <option value="GE">GE (Generic Elective)</option>
-                                <option value="VAC">VAC (Value Added Course)</option>
-                                <option value="SEC">SEC (Skill Enhancement Course)</option>
-                                <option value="SBC">SBC (Skill Based Course)</option>
-                            </select>
                         </div>
 
                         <div class="form-group">
@@ -263,7 +248,24 @@
         return paperTypeLabels[paperType] || paperType;
     }
 
-    // Load programs on page load
+    function clearSelect(selectElement, placeholder) {
+        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
+        selectElement.disabled = true;
+    }
+
+    function setSelectOptions(selectElement, items, placeholder) {
+        clearSelect(selectElement, placeholder);
+        if (items && items.length > 0) {
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.name;
+                selectElement.appendChild(option);
+            });
+            selectElement.disabled = false;
+        }
+    }
+
     async function loadPrograms() {
         try {
             const response = await fetch('/api/programs');
@@ -273,17 +275,15 @@
             
             if (data.success) {
                 const programSelect = document.getElementById('course_id');
-                programSelect.innerHTML = '<option value="">Select Program/Course</option>';
+                programSelect.innerHTML = '<option value="">Select Course</option>';
                 
                 if (data.data && data.data.length > 0) {
                     data.data.forEach(program => {
                         const option = document.createElement('option');
-                        option.value = program.id;  // Store Program_id
-                        option.textContent = program.name;  // Display Course_Program_name
+                        option.value = program.id;
+                        option.textContent = program.name;
                         programSelect.appendChild(option);
                     });
-                } else {
-                    console.warn('No programs available for this college');
                 }
             } else {
                 console.error('Failed to load programs:', data.message);
@@ -292,6 +292,116 @@
             console.error('Error loading programs:', error);
         }
     }
+
+    async function loadPaperSemesters() {
+        const courseId = document.getElementById('course_id').value;
+        const semesterSelect = document.getElementById('semester');
+        const paperTypeSelect = document.getElementById('paper_type');
+        const paperNameSelect = document.getElementById('paper_name');
+        const upcCodeInput = document.getElementById('upc_code');
+
+        clearSelect(semesterSelect, 'Select Semester');
+        clearSelect(paperTypeSelect, 'Select Paper Type');
+        clearSelect(paperNameSelect, 'Select Paper Name');
+        upcCodeInput.value = '';
+
+        if (!courseId) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/paper-semesters?course_id=${courseId}`);
+            const data = await response.json();
+
+            if (data.success) {
+                setSelectOptions(semesterSelect, data.data, 'Select Semester');
+            }
+        } catch (error) {
+            console.error('Error loading paper semesters:', error);
+        }
+    }
+
+    async function loadPaperTypes() {
+        const courseId = document.getElementById('course_id').value;
+        const semester = document.getElementById('semester').value;
+        const paperTypeSelect = document.getElementById('paper_type');
+        const paperNameSelect = document.getElementById('paper_name');
+        const upcCodeInput = document.getElementById('upc_code');
+
+        clearSelect(paperTypeSelect, 'Select Paper Type');
+        clearSelect(paperNameSelect, 'Select Paper Name');
+        upcCodeInput.value = '';
+
+        if (!courseId || !semester) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/paper-types?course_id=${courseId}&semester=${semester}`);
+            const data = await response.json();
+
+            if (data.success) {
+                setSelectOptions(paperTypeSelect, data.data, 'Select Paper Type');
+            }
+        } catch (error) {
+            console.error('Error loading paper types:', error);
+        }
+    }
+
+    async function loadPaperNames() {
+        const courseId = document.getElementById('course_id').value;
+        const semester = document.getElementById('semester').value;
+        const paperType = document.getElementById('paper_type').value;
+        const paperNameSelect = document.getElementById('paper_name');
+        const upcCodeInput = document.getElementById('upc_code');
+
+        clearSelect(paperNameSelect, 'Select Paper Name');
+        upcCodeInput.value = '';
+
+        if (!courseId || !semester || !paperType) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/paper-names?course_id=${courseId}&semester=${semester}&paper_type=${encodeURIComponent(paperType)}`);
+            const data = await response.json();
+
+            if (data.success) {
+                const mappedData = data.data.map(item => ({
+                    id: String(item.paper_id ?? item.id),
+                    name: item.name,
+                    upc_code: item.upc_code
+                }));
+                setSelectOptions(paperNameSelect, mappedData, 'Select Paper Name');
+                paperNameSelect.dataset.upcMap = JSON.stringify(mappedData);
+
+                Array.from(paperNameSelect.options).forEach(option => {
+                    if (option.value) {
+                        const found = mappedData.find(item => String(item.id) === String(option.value));
+                        if (found) {
+                            option.dataset.upcCode = found.upc_code || '';
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading paper names:', error);
+        }
+    }
+
+    document.getElementById('course_id').addEventListener('change', loadPaperSemesters);
+    document.getElementById('semester').addEventListener('change', loadPaperTypes);
+    document.getElementById('paper_type').addEventListener('change', loadPaperNames);
+    document.getElementById('paper_name').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const upcCodeInput = document.getElementById('upc_code');
+
+        if (selectedOption && selectedOption.dataset.upcCode) {
+            upcCodeInput.value = selectedOption.dataset.upcCode;
+        } else {
+            upcCodeInput.value = '';
+        }
+    });
 
     // Load entries and programs on page load
     loadEntries();
@@ -313,7 +423,7 @@
         
         const entryData = {
             teacher_name: document.getElementById('teacher_name').value,
-            paper_name: document.getElementById('paper_name').value,
+            paper_id: document.getElementById('paper_name').value,
             semester: document.getElementById('semester').value,
             theory_practical: document.getElementById('theory_practical').value,
             teacher_status: document.getElementById('teacher_status').value,
