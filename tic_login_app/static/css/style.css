@@ -455,7 +455,6 @@ body {
     inset: 0;
     z-index: 2;
     width: 100%;
-    min-width: 720px;
     padding: 15px;
     background: #ffffff;
 }
@@ -467,6 +466,7 @@ body {
 .skeleton-table {
     display: grid;
     grid-template-columns: 0.4fr 1.2fr 1.6fr 0.7fr 1.1fr 1fr 0.9fr 1fr 1.4fr;
+    min-width: 720px;
     gap: 16px;
     padding: 16px 0;
 }
