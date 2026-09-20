@@ -120,6 +120,17 @@ class DatabaseHelper:
         except Exception as e:
             print(f"Error fetching paper: {str(e)}")
             return None
+
+    def get_paper_by_id(self, paper_id: int) -> Optional[Dict]:
+        """Get paper details by paper_id."""
+        try:
+            response = self.client.table('Paper_Details').select('*').eq('paper_id', paper_id).execute()
+            if response.data and len(response.data) > 0:
+                return response.data[0]
+            return None
+        except Exception as e:
+            print(f"Error fetching paper by id: {str(e)}")
+            return None
     
     def get_papers_by_semester(self, semester: int) -> List[Dict]:
         """Get all papers for a semester"""
@@ -128,6 +139,15 @@ class DatabaseHelper:
             return response.data if response.data else []
         except Exception as e:
             print(f"Error fetching papers: {str(e)}")
+            return []
+
+    def get_papers_by_program(self, program_id: int) -> List[Dict]:
+        """Get all papers for a program/course."""
+        try:
+            response = self.client.table('Paper_Details').select('*').eq('program_id', program_id).execute()
+            return response.data if response.data else []
+        except Exception as e:
+            print(f"Error fetching papers for program: {str(e)}")
             return []
     
     # Program operations
@@ -150,7 +170,12 @@ class DatabaseHelper:
                 filtered = [
                     item for item in response.data
                     if search_term in item.get('Teacher_Name', '').lower()
-                    or search_term in item.get('paper_name', '').lower()
+                    or (
+                        'paper_name' in item and item.get('paper_name') is not None and search_term in str(item.get('paper_name', '')).lower()
+                    )
+                    or (
+                        'paper_id' in item and item.get('paper_id') is not None and search_term in str(item.get('paper_id', '')).lower()
+                    )
                 ]
                 return filtered
             return []
