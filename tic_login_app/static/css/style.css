@@ -437,10 +437,13 @@ body {
 }
 
 .table-loading-message {
+    position: absolute;
+    inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 10px;
+    background: rgba(255, 255, 255, 0.82);
     color: #667eea;
     font-size: 13px;
     font-weight: 600;
