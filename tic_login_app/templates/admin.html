@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - DU Computer Science{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-box admin-dashboard-box">
+        <div class="admin-header-row">
+            <div class="login-header">
+                <span class="eyebrow">DU Computer Science</span>
+                <h1>Admin Dashboard</h1>
+                <p>Signed in as {{ admin_email }}</p>
+            </div>
+            <a href="{{ url_for('logout') }}" class="admin-logout">Log out</a>
+        </div>
+
+        <div class="admin-toolbar">
+            <div class="admin-filter">
+                <label for="collegeFilter">College</label>
+                <select id="collegeFilter"><option value="">All Colleges</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="courseFilter">Course</label>
+                <select id="courseFilter"><option value="">All courses</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="semesterFilter">Semester</label>
+                <select id="semesterFilter"><option value="">All semesters</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="paperTypeFilter">Paper type</label>
+                <select id="paperTypeFilter"><option value="">All paper types</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="paperFilter">Paper</label>
+                <select id="paperFilter"><option value="">All papers</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="theoryFilter">Theory / Practical</label>
+                <select id="theoryFilter"><option value="">All modes</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="statusFilter">Teacher status</label>
+                <select id="statusFilter"><option value="">All Status</option></select>
+            </div>
+            <div class="admin-filter">
+                <label for="upcFilter">UPC code</label>
+                <input id="upcFilter" type="search" placeholder="Search UPC">
+            </div>
+            <div class="admin-filter">
+                <label for="teacherFilter">Teacher name</label>
+                <input id="teacherFilter" type="search" placeholder="Search teacher">
+            </div>
+            <button type="button" class="btn-reset" id="resetFilters">Reset filters</button>
+        </div>
+
+        <div class="admin-results-summary" id="resultsSummary"></div>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>College</th>
+                        <th>Course</th>
+                        <th>Semester</th>
+                        <th>Paper type</th>
+                        <th>Paper</th>
+                        <th>UPC code</th>
+                        <th>Teacher</th>
+                        <th>Theory / Practical</th>
+                        <th>Teacher status</th>
+                    </tr>
+                </thead>
+                <tbody id="adminEntriesBody">
+                    {% for entry in entries %}
+                    <tr
+                        data-college="{{ entry.college_name }}"
+                        data-course="{{ entry.course_name }}"
+                        data-semester="{{ entry.Semester }}"
+                        data-paper-type="{{ entry.Paper_type }}"
+                        data-paper="{{ entry.paper_name }}"
+                        data-upc="{{ entry.UPC_code }}"
+                        data-teacher="{{ entry.Teacher_Name }}"
+                        data-theory="{{ entry.Theory_Practical }}"
+                        data-status="{{ entry.Teacher_Status }}"
+                    >
+                        <td>{{ loop.index }}</td>
+                        <td>{{ entry.college_name }}</td>
+                        <td>{{ entry.course_name }}</td>
+                        <td>{{ entry.Semester }}</td>
+                        <td>{{ entry.Paper_type }}</td>
+                        <td>{{ entry.paper_name }}</td>
+                        <td>{{ entry.UPC_code }}</td>
+                        <td>{{ entry.Teacher_Name }}</td>
+                        <td>{{ entry.Theory_Practical }}</td>
+                        <td>{{ entry.Teacher_Status }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="10" class="no-data">No teaching records found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const filterDefinitions = {
+        collegeFilter: 'college',
+        courseFilter: 'course',
+        semesterFilter: 'semester',
+        paperTypeFilter: 'paperType',
+        paperFilter: 'paper',
+        theoryFilter: 'theory',
+        statusFilter: 'status'
+    };
+
+    const entryRows = Array.from(document.querySelectorAll('#adminEntriesBody tr[data-college]'));
+    const filterInputs = [
+        ...Object.keys(filterDefinitions).map((id) => document.getElementById(id)),
+        document.getElementById('upcFilter'),
+        document.getElementById('teacherFilter')
+    ];
+
+    function uniqueValues(attribute) {
+        return [...new Set(entryRows.map((row) => row.dataset[attribute]).filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    }
+
+    function populateFilters() {
+        Object.entries(filterDefinitions).forEach(([id, attribute]) => {
+            const select = document.getElementById(id);
+            uniqueValues(attribute).forEach((value) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = value;
+                select.appendChild(option);
+            });
+        });
+    }
+
+    function applyFilters() {
+        let visibleCount = 0;
+        entryRows.forEach((row) => {
+            const selectMatches = Object.entries(filterDefinitions).every(([id, attribute]) => {
+                const value = document.getElementById(id).value;
+                return !value || row.dataset[attribute] === value;
+            });
+            const upcValue = document.getElementById('upcFilter').value.toLowerCase();
+            const teacherValue = document.getElementById('teacherFilter').value.toLowerCase();
+            const textMatches = row.dataset.upc.toLowerCase().includes(upcValue)
+                && row.dataset.teacher.toLowerCase().includes(teacherValue);
+            const visible = selectMatches && textMatches;
+            row.hidden = !visible;
+            if (visible) {
+                visibleCount += 1;
+                row.cells[0].textContent = visibleCount;
+            }
+        });
+        document.getElementById('resultsSummary').textContent = `${visibleCount} of ${entryRows.length} records shown`;
+    }
+
+    filterInputs.forEach((input) => input.addEventListener('input', applyFilters));
+    filterInputs.forEach((input) => input.addEventListener('change', applyFilters));
+    document.getElementById('resetFilters').addEventListener('click', () => {
+        filterInputs.forEach((input) => { input.value = ''; });
+        applyFilters();
+    });
+
+    populateFilters();
+    applyFilters();
+</script>
+{% endblock %}

@@ -24,6 +24,14 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'admin_email' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 def normalize_person_name(name):
     """Store each name with one space between words and title casing."""
     if name is None:
@@ -36,6 +44,8 @@ def normalize_person_name(name):
 def index():
     if 'tic_email' in session:
         return redirect(url_for('dashboard'))
+    if 'admin_email' in session:
+        return redirect(url_for('admin_dashboard'))
     return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -74,6 +84,74 @@ def login():
             return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
     return render_template('login.html')
+
+@app.route('/admin-login', methods=['POST'])
+def admin_login():
+    data = request.get_json() or {}
+    email = (data.get('email') or '').strip()
+    password = data.get('password') or ''
+
+    try:
+        response = (
+            supabase.table('Admin_details')
+            .select('admin_email_id, admin_password')
+            .eq('admin_email_id', email)
+            .execute()
+        )
+
+        if response.data and response.data[0].get('admin_password') == password:
+            session.clear()
+            session['admin_email'] = email
+            return jsonify({'success': True, 'message': 'Admin login successful'}), 200
+
+        return jsonify({'success': False, 'message': 'Invalid admin credentials'}), 401
+    except Exception as e:
+        print(f"Admin login error: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    entries = []
+    try:
+        entries_response = supabase.table('College_Course_Teaching_Details').select('*').execute()
+        colleges_response = supabase.table('College_Details').select('College_Code, College_Name').execute()
+        courses_response = supabase.table('College_Course_Program_Details').select('Program_id, Course_Program_name').execute()
+        papers_response = supabase.table('Paper_Details').select('paper_id, Paper_Name').execute()
+
+        college_names = {
+            str(item['College_Code']): item['College_Name']
+            for item in colleges_response.data or []
+        }
+        course_names = {
+            str(item['Program_id']): item['Course_Program_name']
+            for item in courses_response.data or []
+        }
+        paper_names = {
+            str(item['paper_id']): item['Paper_Name']
+            for item in papers_response.data or []
+        }
+
+        for entry in entries_response.data or []:
+            enriched_entry = dict(entry)
+            enriched_entry['college_name'] = college_names.get(str(entry.get('College_id')), 'Unknown college')
+            enriched_entry['course_name'] = course_names.get(str(entry.get('Course_id')), 'Unknown course')
+            enriched_entry['paper_name'] = paper_names.get(str(entry.get('paper_id')), 'Unknown paper')
+            entries.append(enriched_entry)
+
+        entries.sort(key=lambda entry: (
+            str(entry.get('college_name', '')).casefold(),
+            str(entry.get('course_name', '')).casefold(),
+            str(entry.get('Semester', '')),
+        ))
+    except Exception as e:
+        print(f"Error fetching admin entries: {str(e)}")
+
+    return render_template(
+        'admin.html',
+        admin_email=session.get('admin_email'),
+        entries=entries,
+    )
 
 @app.route('/dashboard')
 @login_required

@@ -1,40 +1,39 @@
 {% extends "base.html" %}
 
-{% block title %}TIC Login - DU Computer Science{% endblock %}
+{% block title %}Login - DU Computer Science{% endblock %}
 
 {% block content %}
 <div class="login-container">
     <div class="login-box">
         <div class="login-header">
-            <h1>TIC Login</h1>
-            <p>Delhi University - Computer Science Department</p>
+            <span class="eyebrow">DU Computer Science</span>
+            <h1 id="loginTitle">TIC Login</h1>
+            <p id="loginSubtitle">Teacher-in-Charge course paper management</p>
         </div>
-        
+
+        <div class="login-switcher" role="group" aria-label="Choose login type">
+            <button type="button" class="switch-option active" data-login-type="tic">TIC Login</button>
+            <button type="button" class="switch-option" data-login-type="admin">Admin Login</button>
+            <span class="switch-indicator" aria-hidden="true"></span>
+        </div>
+
         <form id="loginForm" class="login-form">
-            <div class="form-group">
+            <div class="form-group" id="ticEmailGroup">
                 <label for="tic_email">TIC Email:</label>
-                <input 
-                    type="email" 
-                    id="tic_email" 
-                    name="tic_email" 
-                    placeholder="Enter your TIC email" 
-                    required
-                >
+                <input type="email" id="tic_email" name="tic_email" placeholder="Enter your TIC email" required>
+            </div>
+
+            <div class="form-group" id="adminEmailGroup" hidden>
+                <label for="admin_email">Admin Email:</label>
+                <input type="email" id="admin_email" name="admin_email" placeholder="Enter admin email" disabled>
             </div>
 
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Enter your password" 
-                    required
-                >
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
             </div>
 
-            <button type="submit" class="btn-login">Login</button>
-
+            <button type="submit" class="btn-login" id="loginButton">Login as TIC</button>
             <div id="errorMessage" class="error-message" style="display: none;"></div>
             <div id="loadingSpinner" class="spinner" style="display: none;"></div>
         </form>
@@ -42,43 +41,68 @@
 </div>
 
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const tic_email = document.getElementById('tic_email').value;
-        const password = document.getElementById('password').value;
+    const loginForm = document.getElementById('loginForm');
+    const loginTitle = document.getElementById('loginTitle');
+    const loginSubtitle = document.getElementById('loginSubtitle');
+    const loginButton = document.getElementById('loginButton');
+    const ticEmailGroup = document.getElementById('ticEmailGroup');
+    const adminEmailGroup = document.getElementById('adminEmailGroup');
+    const ticEmail = document.getElementById('tic_email');
+    const adminEmail = document.getElementById('admin_email');
+    let loginType = 'tic';
+
+    document.querySelectorAll('.switch-option').forEach((option) => {
+        option.addEventListener('click', () => {
+            loginType = option.dataset.loginType;
+            const isAdmin = loginType === 'admin';
+            document.querySelectorAll('.switch-option').forEach((item) => item.classList.toggle('active', item === option));
+            ticEmailGroup.hidden = isAdmin;
+            adminEmailGroup.hidden = !isAdmin;
+            ticEmail.disabled = isAdmin;
+            ticEmail.required = !isAdmin;
+            adminEmail.disabled = !isAdmin;
+            adminEmail.required = isAdmin;
+            loginTitle.textContent = isAdmin ? 'Admin Login' : 'TIC Login';
+            loginSubtitle.textContent = isAdmin ? 'Manage the TIC Login system' : 'Teacher-in-Charge course paper management';
+            loginButton.textContent = isAdmin ? 'Login as Admin' : 'Login as TIC';
+            document.getElementById('errorMessage').style.display = 'none';
+        });
+    });
+
+    loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
         const errorMessage = document.getElementById('errorMessage');
         const spinner = document.getElementById('loadingSpinner');
+        const email = loginType === 'admin' ? adminEmail.value : ticEmail.value;
+        const endpoint = loginType === 'admin' ? '/admin-login' : '/login';
+        const body = loginType === 'admin'
+            ? { email, password: document.getElementById('password').value }
+            : { tic_email: email, password: document.getElementById('password').value };
 
         errorMessage.style.display = 'none';
         spinner.style.display = 'block';
+        loginButton.disabled = true;
 
         try {
-            const response = await fetch('/login', {
+            const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    tic_email: tic_email,
-                    password: password
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
             });
-
             const data = await response.json();
-
             if (data.success) {
-                window.location.href = '/dashboard';
-            } else {
-                errorMessage.textContent = data.message || 'Login failed';
-                errorMessage.style.display = 'block';
-                spinner.style.display = 'none';
+                window.location.href = loginType === 'admin' ? '/admin' : '/dashboard';
+                return;
             }
+            errorMessage.textContent = data.message || 'Login failed';
+            errorMessage.style.display = 'block';
         } catch (error) {
             errorMessage.textContent = 'An error occurred. Please try again.';
             errorMessage.style.display = 'block';
-            spinner.style.display = 'none';
             console.error('Error:', error);
+        } finally {
+            spinner.style.display = 'none';
+            loginButton.disabled = false;
         }
     });
 </script>

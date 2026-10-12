@@ -147,6 +147,10 @@ The application will start on `http://localhost:5001`
 - **Email**: tic@du.edu.in
 - **Password**: password123
 
+### Admin Login
+
+Create the admin account in the `Admin_details` table, using `admin_email_id` for the email and `admin_password` for the password. Then choose **Admin Login** on the login screen and enter those credentials.
+
 ## Project Structure
 
 ```
