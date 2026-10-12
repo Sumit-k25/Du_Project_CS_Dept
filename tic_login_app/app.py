@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory
 from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
@@ -47,6 +47,10 @@ def index():
     if 'admin_email' in session:
         return redirect(url_for('admin_dashboard'))
     return redirect(url_for('login'))
+
+@app.route('/image/<path:filename>')
+def image_asset(filename):
+    return send_from_directory(os.path.join(app.root_path, 'image'), filename)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
