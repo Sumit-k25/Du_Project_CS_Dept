@@ -52,20 +52,23 @@
                 <input id="teacherFilter" type="search" placeholder="Search teacher">
             </div>
             <button type="button" class="btn-reset" id="resetFilters">Reset filters</button>
+        </div>
+
+        <div class="admin-results-header">
+            <div class="admin-results-summary" id="resultsSummary"></div>
             <div class="admin-export">
                 <label for="exportFormat">Export format</label>
                 <div class="export-controls">
                     <select id="exportFormat">
+                        <option value="none">Do not export</option>
                         <option value="csv">CSV</option>
                         <option value="excel">Excel</option>
                         <option value="pdf">PDF</option>
                     </select>
-                    <button type="button" class="btn-export" id="exportEntries">Export</button>
+                    <button type="button" class="btn-export" id="exportEntries" hidden>Export</button>
                 </div>
             </div>
         </div>
-
-        <div class="admin-results-summary" id="resultsSummary"></div>
         <div class="admin-table-wrap">
             <table class="admin-table">
                 <thead>
@@ -200,6 +203,10 @@
         const format = document.getElementById('exportFormat').value;
         const filename = `teaching_records_${new Date().toISOString().slice(0, 10)}`;
 
+        if (format === 'none') {
+            return;
+        }
+
         if (format === 'pdf') {
             const tableRows = [headers, ...values].map((row) => `<tr>${row.map((value) => `<td>${String(value ?? '').replace(/[&<>]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[character]))}</td>`).join('')}</tr>`).join('');
             const printWindow = window.open('', '_blank');
@@ -232,6 +239,9 @@
     }
 
     document.getElementById('exportEntries').addEventListener('click', exportRows);
+    document.getElementById('exportFormat').addEventListener('change', (event) => {
+        document.getElementById('exportEntries').hidden = event.target.value === 'none';
+    });
 
     populateFilters();
     applyFilters();

@@ -271,7 +271,6 @@ body {
 }
 
 .admin-export {
-    align-self: end;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -317,6 +316,12 @@ body {
 .admin-results-summary {
     color: #667085;
     font-size: 13px;
+}
+
+.admin-results-header {
+    align-items: end;
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 10px;
 }
 
@@ -424,6 +429,12 @@ body {
     .admin-header-row {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .admin-results-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
     }
 
     .admin-logout {
