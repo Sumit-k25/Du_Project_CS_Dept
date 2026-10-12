@@ -131,10 +131,16 @@
     };
 
     const entryRows = Array.from(document.querySelectorAll('#adminEntriesBody tr[data-college]'));
+    const filterElements = Object.fromEntries(
+        Object.keys(filterDefinitions).map((id) => [id, document.getElementById(id)])
+    );
+    const upcFilter = document.getElementById('upcFilter');
+    const teacherFilter = document.getElementById('teacherFilter');
+    const resultsSummary = document.getElementById('resultsSummary');
+    const exportFormat = document.getElementById('exportFormat');
+    const exportButton = document.getElementById('exportEntries');
     const filterInputs = [
-        ...Object.keys(filterDefinitions).map((id) => document.getElementById(id)),
-        document.getElementById('upcFilter'),
-        document.getElementById('teacherFilter')
+        ...Object.values(filterElements), upcFilter, teacherFilter
     ];
 
     function uniqueValues(attribute) {
@@ -158,11 +164,11 @@
         let visibleCount = 0;
         entryRows.forEach((row) => {
             const selectMatches = Object.entries(filterDefinitions).every(([id, attribute]) => {
-                const value = document.getElementById(id).value;
+                const value = filterElements[id].value;
                 return !value || row.dataset[attribute] === value;
             });
-            const upcValue = document.getElementById('upcFilter').value.toLowerCase();
-            const teacherValue = document.getElementById('teacherFilter').value.toLowerCase();
+            const upcValue = upcFilter.value.toLowerCase();
+            const teacherValue = teacherFilter.value.toLowerCase();
             const textMatches = row.dataset.upc.toLowerCase().includes(upcValue)
                 && row.dataset.teacher.toLowerCase().includes(teacherValue);
             const visible = selectMatches && textMatches;
@@ -172,7 +178,7 @@
                 row.cells[0].textContent = visibleCount;
             }
         });
-        document.getElementById('resultsSummary').textContent = `${visibleCount} of ${entryRows.length} records shown`;
+        resultsSummary.textContent = `${visibleCount} of ${entryRows.length} records shown`;
     }
 
     filterInputs.forEach((input) => input.addEventListener('input', applyFilters));
@@ -200,7 +206,7 @@
             row.dataset.theory,
             row.dataset.status
         ]);
-        const format = document.getElementById('exportFormat').value;
+        const format = exportFormat.value;
         const filename = `teaching_records_${new Date().toISOString().slice(0, 10)}`;
 
         if (format === 'none') {
@@ -208,9 +214,9 @@
         }
 
         if (format === 'pdf') {
-            const tableRows = [headers, ...values].map((row) => `<tr>${row.map((value) => `<td>${String(value ?? '').replace(/[&<>]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[character]))}</td>`).join('')}</tr>`).join('');
+            const tableRows = [headers, ...values].map((row) => `<tr>${row.map((value) => `<td>${escapeHtml(value)}</td>`).join('')}</tr>`).join('');
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<!doctype html><html><head><title>${filename}</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#273142}h1{font-size:20px;margin:0 0 16px}table{border-collapse:collapse;font-size:10px;width:100%}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left}th{background:#273142;color:white}tr:nth-child(even){background:#f8fafc}@media print{body{padding:0}}</style></head><body><h1>Teaching Records</h1><table><thead><tr>${headers.map((header) => `<th>${header}</th>`).join('')}</tr></thead><tbody>${tableRows.replace(/<tr><td>/, '<tr><td>').replace(/<tr>/, '<tr>')}</tbody></table></body></html>`);
+            printWindow.document.write(`<!doctype html><html><head><title>${filename}</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#273142}h1{font-size:20px;margin:0 0 16px}table{border-collapse:collapse;font-size:10px;width:100%}th,td{border:1px solid #cbd5e1;padding:6px;text-align:left}th{background:#273142;color:white}tr:nth-child(even){background:#f8fafc}@media print{body{padding:0}}</style></head><body><h1>Teaching Records</h1><table><thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead><tbody>${tableRows}</tbody></table></body></html>`);
             printWindow.document.close();
             printWindow.focus();
             printWindow.print();
@@ -218,7 +224,7 @@
         }
 
         if (format === 'excel') {
-            const tableRows = [headers, ...values].map((row) => `<tr>${row.map((value) => `<td>${String(value ?? '').replace(/[&<>]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[character]))}</td>`).join('')}</tr>`).join('');
+            const tableRows = [headers, ...values].map((row) => `<tr>${row.map((value) => `<td>${escapeHtml(value)}</td>`).join('')}</tr>`).join('');
             downloadFile(`data:application/vnd.ms-excel;charset=utf-8,${encodeURIComponent(`<table>${tableRows}</table>`)}`, `${filename}.xls`);
             return;
         }
@@ -227,6 +233,10 @@
             .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
             .join('\n');
         downloadFile(`data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`, `${filename}.csv`);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[character]));
     }
 
     function downloadFile(href, filename) {
@@ -238,9 +248,9 @@
         link.remove();
     }
 
-    document.getElementById('exportEntries').addEventListener('click', exportRows);
-    document.getElementById('exportFormat').addEventListener('change', (event) => {
-        document.getElementById('exportEntries').hidden = event.target.value === 'none';
+    exportButton.addEventListener('click', exportRows);
+    exportFormat.addEventListener('change', (event) => {
+        exportButton.hidden = event.target.value === 'none';
     });
 
     populateFilters();

@@ -114,7 +114,11 @@ def admin_login():
 def admin_dashboard():
     entries = []
     try:
-        entries_response = supabase.table('College_Course_Teaching_Details').select('*').execute()
+        entries_response = (
+            supabase.table('College_Course_Teaching_Details')
+            .select('College_id, Course_id, Semester, Paper_type, paper_id, UPC_code, Teacher_Name, Theory_Practical, Teacher_Status')
+            .execute()
+        )
         colleges_response = supabase.table('College_Details').select('College_Code, College_Name').execute()
         courses_response = supabase.table('College_Course_Program_Details').select('Program_id, Course_Program_name').execute()
         papers_response = supabase.table('Paper_Details').select('paper_id, Paper_Name').execute()
