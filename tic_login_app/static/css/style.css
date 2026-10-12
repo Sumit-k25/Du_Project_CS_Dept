@@ -270,6 +270,50 @@ body {
     background: #111827;
 }
 
+.admin-export {
+    align-self: end;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-export label {
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.export-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.export-controls select {
+    background: white;
+    border: 1px solid #d7dce5;
+    border-radius: 5px;
+    color: #273142;
+    min-height: 38px;
+    padding: 8px 10px;
+}
+
+.btn-export {
+    background: linear-gradient(135deg, #667eea 0%, #5b4bb7 100%);
+    border: 0;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    min-height: 38px;
+    padding: 8px 14px;
+}
+
+.btn-export:hover {
+    box-shadow: 0 5px 14px rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+}
+
 .admin-results-summary {
     color: #667085;
     font-size: 13px;
